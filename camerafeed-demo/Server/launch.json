@@ -1,0 +1,9 @@
+{
+    "Furhat_IP": "172.22.77.111",
+    "Dev_IP": "172.17.38.249",
+    "detection_exposure_port": "9999",
+    "detection_period": 100,
+    "detection_period2": 10,
+
+    "detection_confidence_threshold": 0.5
+}

@@ -1,9 +1,6 @@
 package furhatos.app.objectidentifier
 
-import furhatos.app.objectidentifier.flow.EnterEvent
-import furhatos.app.objectidentifier.flow.LeaveEvent
 import furhatos.app.objectidentifier.flow.Main
-import furhatos.event.EventSystem
 import furhatos.skills.Skill
 import furhatos.flow.kotlin.*
 import furhatos.util.CommonUtils
@@ -12,12 +9,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.GlobalScope
 import zmq.ZMQ.ZMQ_SUB
 
+
 val logger = CommonUtils.getRootLogger()
-val objserv = "tcp://<local ip of your computer>:9999" //The TCP socket of the object server
+val objserv = "tcp://172.25.249.240:9999" //The TCP socket of the object server
 
 val subSocket: ZMQ.Socket = getConnectedSocket(ZMQ_SUB, objserv) //Makes a socket of the object server
 val enter = "enter_" //Objects that enter the view start with this string
 val leave = "leave_" //Objects that leave the view start with this string
+var handler_one = EmotionHandler()
 
 /**
  * Parses a message from the object server, turns the message into a list of objects.
@@ -45,13 +44,11 @@ fun startListenThread() {
         logger.warn("LAUNCHING COROUTINE")
         subSocket.subscribe("")
         while (true) {
+            print("recieving...")
             val message = subSocket.recvStr()
+            processResponse(message)
             logger.warn("got: $message")
-            if(message.contains(enter)) {
-                EventSystem.send(EnterEvent(getObjects(message, enter)))
-            } else if(message.contains(leave)) {
-                EventSystem.send(LeaveEvent(getObjects(message, leave)))
-            }
+            processResponse(message)
         }
     }
 }
@@ -65,4 +62,12 @@ class ObjectIdentifierSkill : Skill() {
 
 fun main(args: Array<String>) {
     Skill.main(args)
+}
+
+fun getHandler() : EmotionHandler {
+    return handler_one
+}
+
+fun processResponse (message: String) {
+    handler_one.getDominantEmotion(message)
 }

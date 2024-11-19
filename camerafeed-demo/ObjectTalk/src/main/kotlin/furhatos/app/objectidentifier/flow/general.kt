@@ -1,5 +1,6 @@
 package furhatos.app.objectidentifier.flow
 
+import furhatos.app.objectidentifier.getHandler
 import furhatos.event.Event
 import furhatos.flow.kotlin.furhat
 import furhatos.flow.kotlin.state
@@ -18,6 +19,7 @@ val Main = state {
     onEntry {
         furhat.cameraFeed.enable()
         furhat.say("Welcome to this camera feed demonstration, please place an item in front of me. Maybe I can detect what it is.")
+        furhat.say(getHandler().getEmotion().toString())
     }
 
     onEvent<EnterEvent> {// Objects that enter the view
