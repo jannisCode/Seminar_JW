@@ -1,3 +1,4 @@
+import math
 import zmq
 import numpy as np
 import cv2
@@ -8,6 +9,15 @@ from deepface import DeepFace
 def sendBack(message):
     outsocket.send_string(message)
 
+def euclidean(x1: int, y1 : int, x2 : int, y2 : int) -> float:
+    return math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
+
+# which face belongs to who
+def closestDetectedFace(x: int, y: int):
+    print("closestDetectedFaceSearched")
+
+
+
 # Load configuration
 with open('launch.json') as f:
   config = json.load(f)
@@ -15,6 +25,7 @@ print(config)
 
 # Setup the sockets
 context = zmq.Context()
+jsonString = ""
 
 # Input camera feed from furhat using a SUB socket
 insocket = context.socket(zmq.SUB)
@@ -33,6 +44,7 @@ prevset = {}
 iterations = 0
 detection_period = config["detection_period"] # Detecting objects is resource intensive, so we try to avoid detecting objects in every frame
 detection_threshold = config["detection_confidence_threshold"] # Detection threshold takes a double between 0.0 and 1.0
+
 x = True
 while x:
 
@@ -50,7 +62,11 @@ while x:
             sendBack(analysis)
             print("taken time for detect", time.time()-starttime)
         iterations = iterations + 1
-    
+    else:
+        print("else")
+        print(string)
+        jsonString = string
+
     k = cv2.waitKey(1)
     if k%256 == 27: # When pressing esc the program stops.
         # ESC pressed
