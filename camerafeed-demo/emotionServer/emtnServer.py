@@ -1,13 +1,39 @@
 import math
+
+import requests
 import zmq
 import numpy as np
 import cv2
 import time
 import json
-from deepface import DeepFace
+import base64
 
-def sendBack(message):
-    outsocket.send_string(message)
+from deepface import DeepFace
+from deepface.modules.streaming import analysis
+from keras.src.backend.tensorflow.trainer import convert_to_np_if_not_ragged
+
+url = "https://llm.k8s.iism.kit.edu/analyze"
+
+
+class NumpyEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, np.float32):
+            return float(obj)
+        if isinstance(obj, np.float64):
+            return float(obj)
+        if isinstance(obj, np.ndarray):
+            return obj.tolist()
+        return super(NumpyEncoder, self).default(obj)
+
+def sendBack(data):
+    outsocket.send(data.encode('utf-8'))
+
+def getDominantEmotion(data) -> str:
+    try:
+        dominant_emotion = data['results'][0]['dominant_emotion']
+        return dominant_emotion
+    except Exception:
+        return ""
 
 def euclidean(x1: int, y1 : int, x2 : int, y2 : int) -> float:
     return math.sqrt((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1))
@@ -15,8 +41,6 @@ def euclidean(x1: int, y1 : int, x2 : int, y2 : int) -> float:
 # which face belongs to who
 def closestDetectedFace(x: int, y: int):
     print("closestDetectedFaceSearched")
-
-
 
 # Load configuration
 with open('launch.json') as f:
@@ -50,21 +74,30 @@ while x:
 
     string = insocket.recv()
     magicnumber = string[0:3]
-    print("magic number is: ", magicnumber)
     # check if we have a JPEG image (starts with ffd8ff)
     if magicnumber == b'\xff\xd8\xff':
         starttime = time.time()
+        print(iterations)
         if (iterations % detection_period == 0):
-            analysis = DeepFace.analyze(
-                cv2.imread(string),
-                actions=['emotion'],
-            )
-            sendBack(analysis)
+
+            image_base64 = base64.b64encode(string).decode('utf-8')
+            image_base64 = "data:image/jpeg;base64," + image_base64
+            print(" hehe")
+            data = {
+                "img_path": image_base64,  # Use the Base64-encoded string
+                "actions": ["emotion"]
+            }
+
+            analysis = requests.post(url, json=data)
+
+            print(analysis)
+            sendBack(analysis.json())
+            print("Analysis from Deepface: " , getDominantEmotion(analysis.json()))
             print("taken time for detect", time.time()-starttime)
         iterations = iterations + 1
     else:
         print("else")
-        print(string)
+        print(" ")
         jsonString = string
 
     k = cv2.waitKey(1)
@@ -72,3 +105,5 @@ while x:
         # ESC pressed
         print("Escape hit, closing...")
         break
+
+
