@@ -1,7 +1,7 @@
 package furhatos.app.objectidentifier
 
 class EmotionHandler {
-    var currentEmotion = emotions.NEUTRAL
+    private var currentEmotion = emotions.NO_EMOTION
 
     fun setEmotion(emotion: emotions) {
         this.currentEmotion = emotion

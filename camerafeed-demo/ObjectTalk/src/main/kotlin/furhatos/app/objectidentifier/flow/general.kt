@@ -18,24 +18,15 @@ val Main = state {
 
     onEntry {
         furhat.cameraFeed.enable()
-        furhat.say("Welcome to this camera feed demonstration, please place an item in front of me. Maybe I can detect what it is.")
         furhat.say(getHandler().getEmotion().toString())
     }
 
     onEvent<EnterEvent> {// Objects that enter the view
-        if (it.objects.size > 1) {
-            furhat.say("You showed me multiple objects. ${it.objects.joinToString(" and ")}")
-        } else {
-            furhat.say("Oh cool, that is a ${it.objects[0]}")
-        }
+        furhat.say("you are" + getHandler().getEmotion().toString())
     }
 
     onEvent<LeaveEvent> {
-        if (it.objects.size > 1) { //Objects that leave the view
-            furhat.say("You removed multiple objects. ${it.objects.joinToString(" and ")}")
-        } else {
-            furhat.say("No, don't remove that, I love the ${it.objects[0]}")
-        }
+        furhat.say("you are" + getHandler().getEmotion().toString())
     }
 
     onExit {

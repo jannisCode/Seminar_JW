@@ -7,7 +7,8 @@ enum class emotions (val displayName: String) {
     HAPPY("happy"),
     SAD("sad"),
     SURPRISE("surprise"),
-    NEUTRAL("neutral");
+    NEUTRAL("neutral"),
+    NO_EMOTION("no emotion detected");
 
     override fun toString(): String {
         return displayName
